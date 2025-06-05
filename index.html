@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Direct Message Generator</title>
+    <style>
+        .wa-tool-container {
+            max-width: 650px;
+            margin: 20px auto;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            border: 1px solid #e3e6ea;
+            overflow: hidden;
+        }
+
+        .wa-header {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            padding: 25px;
+            text-align: center;
+            color: white;
+        }
+
+        .wa-header h3 {
+            margin: 0;
+            font-size: 1.8em;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .wa-content {
+            padding: 30px;
+        }
+
+        .wa-form-group {
+            margin-bottom: 25px;
+        }
+
+        .wa-form-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 1em;
+        }
+
+        .wa-form-group input[type="text"],
+        .wa-form-group select,
+        .wa-form-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background: #ffffff;
+            box-sizing: border-box; /* Added for consistent sizing */
+        }
+
+        .wa-form-group input[type="text"]:focus,
+        .wa-form-group select:focus,
+        .wa-form-group textarea:focus {
+            border-color: #25D366;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .wa-phone-input-group {
+            display: flex;
+            gap: 12px;
+            align-items: stretch;
+        }
+
+        .wa-phone-input-group select {
+            flex: 0 0 180px; /* Adjusted for potentially longer text due to name first */
+            font-family: inherit;
+            background: #ffffff;
+        }
+
+        .wa-phone-input-group input[type="text"] {
+            flex: 1;
+        }
+
+        /* Flag emoji support in select options:
+           Note: Emoji rendering in native <select><option> elements is highly
+           dependent on the browser and operating system. This CSS attempts to
+           enable it, but it may not work universally. The country name is always
+           visible for clarity. */
+        .wa-form-group select option {
+            font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", "EmojiSymbols", sans-serif;
+            /* padding: 8px; Padding on <option> is often ignored or has limited effect */
+        }
+
+        .wa-form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+            font-family: inherit;
+        }
+
+        .wa-output-group {
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 2px solid #f1f3f4;
+        }
+
+        .wa-output-group label {
+            display: block;
+            margin-bottom: 12px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 1em;
+        }
+
+        .wa-link-container {
+            display: flex;
+            gap: 10px;
+            align-items: stretch;
+            margin-bottom: 20px;
+        }
+
+        .wa-link-container input[type="text"] {
+            flex: 1;
+            background-color: #f8f9fa;
+            border: 2px solid #e1e8ed;
+            padding: 14px 16px;
+            border-radius: 10px;
+            font-size: 0.95em;
+            color: #495057;
+        }
+
+        .wa-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            min-height: 50px;
+            box-sizing: border-box; /* Added for consistent sizing */
+        }
+
+        .wa-button:active {
+            transform: translateY(1px);
+        }
+
+        .wa-button-primary {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+            font-size: 1.1em;
+            padding: 16px 32px;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        .wa-button-primary:hover {
+            background: linear-gradient(135deg, #128C7E 0%, #25D366 100%);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .wa-button-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+            flex: 0 0 auto;
+        }
+
+        .wa-button-secondary:hover {
+            background: linear-gradient(135deg, #495057 0%, #6c757d 100%);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .wa-button-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+            font-size: 0.9em;
+            padding: 10px 16px;
+        }
+
+        .wa-button-danger:hover {
+            background: linear-gradient(135deg, #c82333 0%, #dc3545 100%);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        }
+
+        #wa-copy-feedback {
+            display: inline-block;
+            margin-left: 10px;
+            font-size: 0.9em;
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .wa-recent-links {
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 2px solid #f1f3f4;
+        }
+
+        .wa-recent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .wa-recent-header h4 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 1.2em;
+        }
+
+        .wa-recent-list {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 5px; /* Space for scrollbar */
+        }
+
+        .wa-recent-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .wa-recent-item:hover {
+            background: #e9ecef;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .wa-recent-phone {
+            font-weight: 600;
+            color: #25D366;
+            margin-bottom: 5px;
+        }
+
+        .wa-recent-message {
+            color: #6c757d;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            word-break: break-word;
+        }
+
+        .wa-recent-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .wa-recent-actions .wa-button {
+            font-size: 0.85em;
+            padding: 8px 12px;
+            min-height: auto;
+        }
+
+        .wa-empty-state {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 20px;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .wa-tool-container {
+                margin: 10px;
+                border-radius: 12px;
+            }
+            
+            .wa-content {
+                padding: 20px;
+            }
+            
+            .wa-phone-input-group {
+                flex-direction: column;
+            }
+            
+            .wa-phone-input-group select {
+                flex: none; /* Full width in column layout */
+                width: 100%;
+            }
+            
+            .wa-link-container {
+                flex-direction: column;
+            }
+            
+            .wa-button-secondary { /* Allow copy button to take full width in column */
+                flex: 1 1 auto;
+            }
+
+            .wa-recent-actions {
+                justify-content: flex-start; /* Align buttons to start on mobile */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wa-tool-container">
+        <div class="wa-header">
+            <h3>🚀 WhatsApp Direct Message Generator</h3>
+        </div>
+        <div class="wa-promo-section" style="margin-top: 30px; padding: 20px; background-color: #e6fffa; border: 1px solid #99f6e4; border-radius: 10px; text-align: center; font-size: 0.9em;">
+            <p style="margin: 0; color: #0d9488;">
+                📣 Also, check out our powerful WhatsApp Sender Marketing Tool: <br>
+                <a href="https://leadsfunda.com/service/wa-sender-pro-bulk-whatsapp-marketing-made-easy/" target="_blank" rel="noopener noreferrer" style="color: #0f766e; font-weight: 600; text-decoration: none; display: inline-block; margin-top: 5px; padding: 8px 15px; background-color: #14b8a6; color: white; border-radius: 8px; transition: background-color 0.3s ease;">
+                    Discover WA Sender Pro for Bulk Marketing!
+                </a>
+            </p>
+        </div>
+        <div class="wa-content">
+            <div class="wa-form-group">
+                <label for="wa-country-code">📍 Select Country & Phone Number</label>
+                <div class="wa-phone-input-group">
+                    <select id="wa-country-code">
+                        <!-- Options will be populated by JS -->
+                    </select>
+                    <input type="text" id="wa-phone-number" placeholder="Enter phone number (e.g., 1005874412)">
+                </div>
+            </div>
+
+            <div class="wa-form-group">
+                <label for="wa-message">💬 Your Message</label>
+                <textarea id="wa-message" placeholder="Type your message here... (Optional)"></textarea>
+            </div>
+
+            <div class="wa-output-group" id="wa-link-output-area" style="display: none;">
+                <label for="wa-generated-link">🔗 Generated WhatsApp Link:</label>
+                <div class="wa-link-container">
+                    <input type="text" id="wa-generated-link" readonly>
+                    <button id="wa-copy-button" class="wa-button wa-button-secondary">📋 Copy</button>
+                    <span id="wa-copy-feedback"></span>
+                </div>
+                
+                <a href="#" id="wa-send-button" class="wa-button wa-button-primary" target="_blank">
+                    📱 Send WhatsApp Message
+                </a>
+            </div>
+
+            <div class="wa-recent-links" id="wa-recent-section" style="display: none;">
+                <div class="wa-recent-header">
+                    <h4>📋 Recent Links</h4>
+                    <button id="wa-clear-history" class="wa-button wa-button-danger">🗑️ Clear All</button>
+                </div>
+                <div class="wa-recent-list" id="wa-recent-list">
+                    <!-- Recent links will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const countryCodeSelect = document.getElementById('wa-country-code');
+            const phoneNumberInput = document.getElementById('wa-phone-number');
+            const messageTextarea = document.getElementById('wa-message');
+            const sendButton = document.getElementById('wa-send-button');
+            const copyButton = document.getElementById('wa-copy-button');
+            const generatedLinkInput = document.getElementById('wa-generated-link');
+            const linkOutputArea = document.getElementById('wa-link-output-area');
+            const copyFeedback = document.getElementById('wa-copy-feedback');
+            const recentSection = document.getElementById('wa-recent-section');
+            const recentList = document.getElementById('wa-recent-list');
+            const clearHistoryButton = document.getElementById('wa-clear-history');
+
+            const countries = [
+                { name: "Afghanistan", code: "93", flag: "🇦🇫" },
+                { name: "Albania", code: "355", flag: "🇦🇱" },
+                { name: "Algeria", code: "213", flag: "🇩🇿" },
+                { name: "American Samoa", code: "1684", flag: "🇦🇸" },
+                { name: "Andorra", code: "376", flag: "🇦🇩" },
+                { name: "Angola", code: "244", flag: "🇦🇴" },
+                { name: "Argentina", code: "54", flag: "🇦🇷" },
+                { name: "Armenia", code: "374", flag: "🇦🇲" },
+                { name: "Aruba", code: "297", flag: "🇦🇼" },
+                { name: "Australia", code: "61", flag: "🇦🇺" },
+                { name: "Austria", code: "43", flag: "🇦🇹" },
+                { name: "Azerbaijan", code: "994", flag: "🇦🇿" },
+                { name: "Bahamas", code: "1242", flag: "🇧🇸" },
+                { name: "Bahrain", code: "973", flag: "🇧🇭" },
+                { name: "Bangladesh", code: "880", flag: "🇧🇩" },
+                { name: "Barbados", code: "1246", flag: "🇧🇧" },
+                { name: "Belarus", code: "375", flag: "🇧🇾" },
+                { name: "Belgium", code: "32", flag: "🇧🇪" },
+                { name: "Belize", code: "501", flag: "🇧🇿" },
+                { name: "Benin", code: "229", flag: "🇧🇯" },
+                { name: "Bermuda", code: "1441", flag: "🇧🇲" },
+                { name: "Bhutan", code: "975", flag: "🇧🇹" },
+                { name: "Bolivia", code: "591", flag: "🇧🇴" },
+                { name: "Bosnia & Herzegovina", code: "387", flag: "🇧🇦" },
+                { name: "Botswana", code: "267", flag: "🇧🇼" },
+                { name: "Brazil", code: "55", flag: "🇧🇷" },
+                { name: "Brunei", code: "673", flag: "🇧🇳" },
+                { name: "Bulgaria", code: "359", flag: "🇧🇬" },
+                { name: "Burkina Faso", code: "226", flag: "🇧🇫" },
+                { name: "Burundi", code: "257", flag: "🇧🇮" },
+                { name: "Cambodia", code: "855", flag: "🇰🇭" },
+                { name: "Cameroon", code: "237", flag: "🇨🇲" },
+                { name: "Canada", code: "1", flag: "🇨🇦" },
+                { name: "Cape Verde", code: "238", flag: "🇨🇻" },
+                { name: "Cayman Islands", code: "1345", flag: "🇰🇾" },
+                { name: "Central African Republic", code: "236", flag: "🇨🇫" },
+                { name: "Chad", code: "235", flag: "🇹🇩" },
+                { name: "Chile", code: "56", flag: "🇨🇱" },
+                { name: "China", code: "86", flag: "🇨🇳" },
+                { name: "Colombia", code: "57", flag: "🇨🇴" },
+                { name: "Comoros", code: "269", flag: "🇰🇲" },
+                { name: "Congo - Brazzaville", code: "242", flag: "🇨🇬" },
+                { name: "Congo - Kinshasa", code: "243", flag: "🇨🇩" },
+                { name: "Cook Islands", code: "682", flag: "🇨🇰" },
+                { name: "Costa Rica", code: "506", flag: "🇨🇷" },
+                { name: "Croatia", code: "385", flag: "🇭🇷" },
+                { name: "Cuba", code: "53", flag: "🇨🇺" },
+                { name: "Cyprus", code: "357", flag: "🇨🇾" },
+                { name: "Czechia", code: "420", flag: "🇨🇿" },
+                { name: "Denmark", code: "45", flag: "🇩🇰" },
+                { name: "Djibouti", code: "253", flag: "🇩🇯" },
+                { name: "Dominica", code: "1767", flag: "🇩🇲" },
+                { name: "Dominican Republic", code: "1809", flag: "🇩🇴" }, // Also uses 1829, 1849 - 1809 is common primary
+                { name: "Ecuador", code: "593", flag: "🇪🇨" },
+                { name: "Egypt", code: "20", flag: "🇪🇬" },
+                { name: "El Salvador", code: "503", flag: "🇸🇻" },
+                { name: "Equatorial Guinea", code: "240", flag: "🇬🇶" },
+                { name: "Eritrea", code: "291", flag: "🇪🇷" },
+                { name: "Estonia", code: "372", flag: "🇪🇪" },
+                { name: "Eswatini", code: "268", flag: "🇸🇿" },
+                { name: "Ethiopia", code: "251", flag: "🇪🇹" },
+                { name: "Fiji", code: "679", flag: "🇫🇯" },
+                { name: "Finland", code: "358", flag: "🇫🇮" },
+                { name: "France", code: "33", flag: "🇫🇷" },
+                { name: "Gabon", code: "241", flag: "🇬🇦" },
+                { name: "Gambia", code: "220", flag: "🇬🇲" },
+                { name: "Georgia", code: "995", flag: "🇬🇪" },
+                { name: "Germany", code: "49", flag: "🇩🇪" },
+                { name: "Ghana", code: "233", flag: "🇬🇭" },
+                { name: "Greece", code: "30", flag: "🇬🇷" },
+                { name: "Greenland", code: "299", flag: "🇬🇱" },
+                { name: "Grenada", code: "1473", flag: "🇬🇩" },
+                { name: "Guam", code: "1671", flag: "🇬🇺" },
+                { name: "Guatemala", code: "502", flag: "🇬🇹" },
+                { name: "Guinea", code: "224", flag: "🇬🇳" },
+                { name: "Guinea-Bissau", code: "245", flag: "🇬🇼" },
+                { name: "Guyana", code: "592", flag: "🇬🇾" },
+                { name: "Haiti", code: "509", flag: "🇭🇹" },
+                { name: "Honduras", code: "504", flag: "🇭🇳" },
+                { name: "Hong Kong", code: "852", flag: "🇭🇰" },
+                { name: "Hungary", code: "36", flag: "🇭🇺" },
+                { name: "Iceland", code: "354", flag: "🇮🇸" },
+                { name: "India", code: "91", flag: "🇮🇳" },
+                { name: "Indonesia", code: "62", flag: "🇮🇩" },
+                { name: "Iran", code: "98", flag: "🇮🇷" },
+                { name: "Iraq", code: "964", flag: "🇮🇶" },
+                { name: "Ireland", code: "353", flag: "🇮🇪" },
+                { name: "Israel", code: "972", flag: "🇮🇱" },
+                { name: "Italy", code: "39", flag: "🇮🇹" },
+                { name: "Jamaica", code: "1876", flag: "🇯🇲" }, // Also uses 1658
+                { name: "Japan", code: "81", flag: "🇯🇵" },
+                { name: "Jordan", code: "962", flag: "🇯🇴" },
+                { name: "Kazakhstan", code: "7", flag: "🇰🇿" }, // Shares +7 with Russia
+                { name: "Kenya", code: "254", flag: "🇰🇪" },
+                { name: "Kiribati", code: "686", flag: "🇰🇮" },
+                { name: "Kuwait", code: "965", flag: "🇰🇼" },
+                { name: "Kyrgyzstan", code: "996", flag: "🇰🇬" },
+                { name: "Laos", code: "856", flag: "🇱🇦" },
+                { name: "Latvia", code: "371", flag: "🇱🇻" },
+                { name: "Lebanon", code: "961", flag: "🇱🇧" },
+                { name: "Lesotho", code: "266", flag: "🇱🇸" },
+                { name: "Liberia", code: "231", flag: "🇱🇷" },
+                { name: "Libya", code: "218", flag: "🇱🇾" },
+                { name: "Liechtenstein", code: "423", flag: "🇱🇮" },
+                { name: "Lithuania", code: "370", flag: "🇱🇹" },
+                { name: "Luxembourg", code: "352", flag: "🇱🇺" },
+                { name: "Macao", code: "853", flag: "🇲🇴" },
+                { name: "Madagascar", code: "261", flag: "🇲🇬" },
+                { name: "Malawi", code: "265", flag: "🇲🇼" },
+                { name: "Malaysia", code: "60", flag: "🇲🇾" },
+                { name: "Maldives", code: "960", flag: "🇲🇻" },
+                { name: "Mali", code: "223", flag: "🇲🇱" },
+                { name: "Malta", code: "356", flag: "🇲🇹" },
+                { name: "Marshall Islands", code: "692", flag: "🇲🇭" },
+                { name: "Mauritania", code: "222", flag: "🇲🇷" },
+                { name: "Mauritius", code: "230", flag: "🇲🇺" },
+                { name: "Mexico", code: "52", flag: "🇲🇽" },
+                { name: "Micronesia", code: "691", flag: "🇫🇲" },
+                { name: "Moldova", code: "373", flag: "🇲🇩" },
+                { name: "Monaco", code: "377", flag: "🇲🇨" },
+                { name: "Mongolia", code: "976", flag: "🇲🇳" },
+                { name: "Montenegro", code: "382", flag: "🇲🇪" },
+                { name: "Morocco", code: "212", flag: "🇲🇦" },
+                { name: "Mozambique", code: "258", flag: "🇲🇿" },
+                { name: "Myanmar (Burma)", code: "95", flag: "🇲🇲" },
+                { name: "Namibia", code: "264", flag: "🇳🇦" },
+                { name: "Nauru", code: "674", flag: "🇳🇷" },
+                { name: "Nepal", code: "977", flag: "🇳🇵" },
+                { name: "Netherlands", code: "31", flag: "🇳🇱" },
+                { name: "New Zealand", code: "64", flag: "🇳🇿" },
+                { name: "Nicaragua", code: "505", flag: "🇳🇮" },
+                { name: "Niger", code: "227", flag: "🇳🇪" },
+                { name: "Nigeria", code: "234", flag: "🇳🇬" },
+                { name: "North Korea", code: "850", flag: "🇰🇵" },
+                { name: "North Macedonia", code: "389", flag: "🇲🇰" },
+                { name: "Norway", code: "47", flag: "🇳🇴" },
+                { name: "Oman", code: "968", flag: "🇴🇲" },
+                { name: "Pakistan", code: "92", flag: "🇵🇰" },
+                { name: "Palau", code: "680", flag: "🇵🇼" },
+                { name: "Palestine", code: "970", flag: "🇵🇸" },
+                { name: "Panama", code: "507", flag: "🇵🇦" },
+                { name: "Papua New Guinea", code: "675", flag: "🇵🇬" },
+                { name: "Paraguay", code: "595", flag: "🇵🇾" },
+                { name: "Peru", code: "51", flag: "🇵🇪" },
+                { name: "Philippines", code: "63", flag: "🇵🇭" },
+                { name: "Poland", code: "48", flag: "🇵🇱" },
+                { name: "Portugal", code: "351", flag: "🇵🇹" },
+                { name: "Puerto Rico", code: "1", flag: "🇵🇷" }, // Shares +1 with US/Canada (NANP)
+                { name: "Qatar", code: "974", flag: "🇶🇦" },
+                { name: "Romania", code: "40", flag: "🇷🇴" },
+                { name: "Russia", code: "7", flag: "🇷🇺" },
+                { name: "Rwanda", code: "250", flag: "🇷🇼" },
+                { name: "Samoa", code: "685", flag: "🇼🇸" },
+                { name: "San Marino", code: "378", flag: "🇸🇲" },
+                { name: "São Tomé & Príncipe", code: "239", flag: "🇸🇹" },
+                { name: "Saudi Arabia", code: "966", flag: "🇸🇦" },
+                { name: "Senegal", code: "221", flag: "🇸🇳" },
+                { name: "Serbia", code: "381", flag: "🇷🇸" },
+                { name: "Seychelles", code: "248", flag: "🇸🇨" },
+                { name: "Sierra Leone", code: "232", flag: "🇸🇱" },
+                { name: "Singapore", code: "65", flag: "🇸🇬" },
+                { name: "Slovakia", code: "421", flag: "🇸🇰" },
+                { name: "Slovenia", code: "386", flag: "🇸🇮" },
+                { name: "Solomon Islands", code: "677", flag: "🇸🇧" },
+                { name: "Somalia", code: "252", flag: "🇸🇴" },
+                { name: "South Africa", code: "27", flag: "🇿🇦" },
+                { name: "South Korea", code: "82", flag: "🇰🇷" },
+                { name: "South Sudan", code: "211", flag: "🇸🇸" },
+                { name: "Spain", code: "34", flag: "🇪🇸" },
+                { name: "Sri Lanka", code: "94", flag: "🇱🇰" },
+                { name: "Sudan", code: "249", flag: "🇸🇩" },
+                { name: "Suriname", code: "597", flag: "🇸🇷" },
+                { name: "Sweden", code: "46", flag: "🇸🇪" },
+                { name: "Switzerland", code: "41", flag: "🇨🇭" },
+                { name: "Syria", code: "963", flag: "🇸🇾" },
+                { name: "Taiwan", code: "886", flag: "🇹🇼" },
+                { name: "Tajikistan", code: "992", flag: "🇹🇯" },
+                { name: "Tanzania", code: "255", flag: "🇹🇿" },
+                { name: "Thailand", code: "66", flag: "🇹🇭" },
+                { name: "Timor-Leste", code: "670", flag: "🇹🇱" },
+                { name: "Togo", code: "228", flag: "🇹🇬" },
+                { name: "Tonga", code: "676", flag: "🇹🇴" },
+                { name: "Trinidad & Tobago", code: "1868", flag: "🇹🇹" },
+                { name: "Tunisia", code: "216", flag: "🇹🇳" },
+                { name: "Turkey", code: "90", flag: "🇹🇷" },
+                { name: "Turkmenistan", code: "993", flag: "🇹🇲" },
+                { name: "Tuvalu", code: "688", flag: "🇹🇻" },
+                { name: "Uganda", code: "256", flag: "🇺🇬" },
+                { name: "Ukraine", code: "380", flag: "🇺🇦" },
+                { name: "United Arab Emirates", code: "971", flag: "🇦🇪" },
+                { name: "United Kingdom", code: "44", flag: "🇬🇧" },
+                { name: "United States", code: "1", flag: "🇺🇸" }, // Shares +1 NANP
+                { name: "Uruguay", code: "598", flag: "🇺🇾" },
+                { name: "Uzbekistan", code: "998", flag: "🇺🇿" },
+                { name: "Vanuatu", code: "678", flag: "🇻🇺" },
+                { name: "Vatican City", code: "379", flag: "🇻🇦" }, // Also uses +39 (Italy's code)
+                { name: "Venezuela", code: "58", flag: "🇻🇪" },
+                { name: "Vietnam", code: "84", flag: "🇻🇳" },
+                { name: "Yemen", code: "967", flag: "🇾🇪" },
+                { name: "Zambia", code: "260", flag: "🇿🇲" },
+                { name: "Zimbabwe", code: "263", flag: "🇿🇼" }
+            ];
+
+            const RECENT_LINKS_KEY = 'waDirectMessageRecentLinks';
+            const MAX_RECENT_LINKS = 10;
+            let recentLinks = [];
+
+            // Sort countries by name for the dropdown
+            countries.sort((a, b) => a.name.localeCompare(b.name));
+
+            function populateCountryCodes() {
+                countries.forEach(country => {
+                    const option = document.createElement('option');
+                    option.value = country.code;
+                    // MODIFIED: Country name first for better type-to-select, then flag.
+                    // Flag display in <option> is browser/OS dependent.
+                    option.textContent = `${country.name} ${country.flag} (+${country.code})`;
+                    countryCodeSelect.appendChild(option);
+                });
+                
+                // Attempt to set a default country more specifically, e.g., United States.
+                // Fallback to India, then the first in the (sorted) list.
+                let defaultCountry = countries.find(c => c.name === "United States" && c.code === "1");
+                if (!defaultCountry) {
+                    defaultCountry = countries.find(c => c.name === "India" && c.code === "91");
+                }
+                if (!defaultCountry && countries.length > 0) {
+                     // Fallback to the first +1 country if US not found, or first country overall
+                    defaultCountry = countries.find(c => c.code === "1") || countries[0];
+                }
+
+                if (defaultCountry) {
+                    countryCodeSelect.value = defaultCountry.code;
+                     // If multiple countries share a code (e.g., +1), ensure the select shows the correct text.
+                     // This requires finding the specific option element.
+                    const matchingOption = Array.from(countryCodeSelect.options).find(opt => 
+                        opt.textContent === `${defaultCountry.name} ${defaultCountry.flag} (+${defaultCountry.code})`
+                    );
+                    if (matchingOption) {
+                        countryCodeSelect.selectedIndex = matchingOption.index;
+                    }
+                }
+            }
+
+            function sanitizePhoneNumber(number) {
+                return number.replace(/\D/g, ''); // Remove all non-digit characters
+            }
+
+            function generateWhatsAppLink() {
+                const countryCode = countryCodeSelect.value;
+                const rawPhoneNumber = phoneNumberInput.value;
+                const nationalNumber = sanitizePhoneNumber(rawPhoneNumber);
+                const message = messageTextarea.value.trim();
+
+                if (!countryCode || !nationalNumber) {
+                    linkOutputArea.style.display = 'none';
+                    return null;
+                }
+
+                const fullPhoneNumber = countryCode + nationalNumber;
+                let url = `https://api.whatsapp.com/send?phone=${fullPhoneNumber}`;
+                if (message) {
+                    url += `&text=${encodeURIComponent(message)}`;
+                }
+
+                generatedLinkInput.value = url;
+                sendButton.href = url;
+                linkOutputArea.style.display = 'block';
+
+                // For recent links, try to get the selected country's name
+                const selectedOption = countryCodeSelect.options[countryCodeSelect.selectedIndex];
+                const countryNameForRecent = selectedOption ? countries.find(c => selectedOption.textContent.includes(c.name) && c.code === countryCode)?.name : '';
+
+                return { countryCode, nationalNumber, message, link: url, countryNameForRecent: countryNameForRecent };
+            }
+
+            function handleInputChange() {
+                generateWhatsAppLink();
+                copyFeedback.textContent = ''; // Clear copy feedback on new input
+            }
+
+            function copyLinkToClipboard() {
+                if (!generatedLinkInput.value) return;
+
+                navigator.clipboard.writeText(generatedLinkInput.value)
+                    .then(() => {
+                        copyFeedback.textContent = 'Copied!';
+                        setTimeout(() => { copyFeedback.textContent = ''; }, 2000);
+                        
+                        const linkData = generateWhatsAppLink(); 
+                        if (linkData) {
+                            saveLinkToRecent(linkData);
+                        }
+                    })
+                    .catch(err => {
+                        copyFeedback.textContent = 'Failed to copy.';
+                        console.error('Failed to copy link: ', err);
+                    });
+            }
+            
+            function loadRecentLinks() {
+                const storedLinks = localStorage.getItem(RECENT_LINKS_KEY);
+                if (storedLinks) {
+                    recentLinks = JSON.parse(storedLinks);
+                } else {
+                    recentLinks = [];
+                }
+                renderRecentLinks();
+            }
+
+            function saveLinkToRecent(linkData) {
+                if (!linkData || !linkData.nationalNumber) return;
+
+                recentLinks = recentLinks.filter(item => 
+                    !(item.countryCode === linkData.countryCode && item.nationalNumber === linkData.nationalNumber && item.message === linkData.message)
+                );
+
+                const newEntry = { 
+                    countryCode: linkData.countryCode,
+                    nationalNumber: linkData.nationalNumber,
+                    message: linkData.message,
+                    link: linkData.link,
+                    timestamp: Date.now(),
+                    countryNameForRecent: linkData.countryNameForRecent // Store country name for better 'Use' functionality
+                };
+
+                recentLinks.unshift(newEntry); 
+
+                if (recentLinks.length > MAX_RECENT_LINKS) {
+                    recentLinks = recentLinks.slice(0, MAX_RECENT_LINKS); 
+                }
+
+                localStorage.setItem(RECENT_LINKS_KEY, JSON.stringify(recentLinks));
+                renderRecentLinks();
+            }
+
+            function renderRecentLinks() {
+                recentList.innerHTML = ''; 
+                if (recentLinks.length === 0) {
+                    recentList.innerHTML = '<p class="wa-empty-state">No recent links generated.</p>';
+                    recentSection.style.display = 'none';
+                    return;
+                }
+
+                recentSection.style.display = 'block';
+                recentLinks.forEach((item, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'wa-recent-item';
+                    
+                    const country = countries.find(c => c.code === item.countryCode && c.name === item.countryNameForRecent) || countries.find(c => c.code === item.countryCode);
+                    const flag = country ? country.flag : '🏳️';
+
+
+                    const phoneDisplay = `${flag} +${item.countryCode} ${item.nationalNumber}`;
+                    const messagePreview = item.message.length > 50 ? item.message.substring(0, 47) + '...' : item.message;
+
+                    div.innerHTML = `
+                        <div class="wa-recent-phone">${phoneDisplay}</div>
+                        <div class="wa-recent-message">${messagePreview || '<em>No message</em>'}</div>
+                        <div class="wa-recent-actions">
+                            <button class="wa-button wa-button-secondary wa-recent-use" data-index="${index}">🔁 Use</button>
+                            <button class="wa-button wa-button-secondary wa-recent-copy" data-link="${item.link}">📋 Copy</button>
+                            <button class="wa-button wa-button-danger wa-recent-delete" data-index="${index}" style="font-size: 0.8em; padding: 6px 10px;">🗑️ Delete</button>
+                        </div>
+                    `;
+                    recentList.appendChild(div);
+                });
+
+                document.querySelectorAll('.wa-recent-use').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const index = parseInt(this.dataset.index);
+                        const itemToUse = recentLinks[index];
+                        if (itemToUse) {
+                            countryCodeSelect.value = itemToUse.countryCode;
+                            
+                            // Attempt to select the correct option by text content if countryNameForRecent is available
+                            if (itemToUse.countryNameForRecent) {
+                                const countryForOption = countries.find(c => c.name === itemToUse.countryNameForRecent && c.code === itemToUse.countryCode);
+                                if (countryForOption) {
+                                   const optionTextToMatch = `${countryForOption.name} ${countryForOption.flag} (+${countryForOption.code})`;
+                                   const matchedOpt = Array.from(countryCodeSelect.options).find(opt => opt.textContent === optionTextToMatch && opt.value === itemToUse.countryCode);
+                                   if (matchedOpt) {
+                                       countryCodeSelect.selectedIndex = matchedOpt.index;
+                                   }
+                                }
+                            } // else, just setting .value is a fallback
+
+
+                            phoneNumberInput.value = itemToUse.nationalNumber;
+                            messageTextarea.value = itemToUse.message;
+                            generateWhatsAppLink(); 
+                            document.querySelector('.wa-tool-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    });
+                });
+
+                document.querySelectorAll('.wa-recent-copy').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const linkToCopy = this.dataset.link;
+                        navigator.clipboard.writeText(linkToCopy)
+                            .then(() => {
+                                const feedbackSpan = document.createElement('span');
+                                feedbackSpan.textContent = ' Copied!';
+                                feedbackSpan.style.color = '#28a745';
+                                feedbackSpan.style.fontSize = '0.9em';
+                                this.parentNode.insertBefore(feedbackSpan, this.nextSibling);
+                                setTimeout(() => { feedbackSpan.remove(); }, 1500);
+                            })
+                            .catch(err => {
+                                alert('Failed to copy link.');
+                                console.error('Failed to copy recent link: ', err);
+                            });
+                    });
+                });
+                 document.querySelectorAll('.wa-recent-delete').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const index = parseInt(this.dataset.index);
+                        deleteRecentLink(index);
+                    });
+                });
+            }
+            
+            function deleteRecentLink(index) {
+                if (index >= 0 && index < recentLinks.length) {
+                    recentLinks.splice(index, 1); 
+                    localStorage.setItem(RECENT_LINKS_KEY, JSON.stringify(recentLinks));
+                    renderRecentLinks(); 
+                }
+            }
+
+            function clearAllRecentLinks() {
+                if (confirm('Are you sure you want to clear all recent links?')) {
+                    recentLinks = [];
+                    localStorage.removeItem(RECENT_LINKS_KEY);
+                    renderRecentLinks();
+                }
+            }
+            
+            countryCodeSelect.addEventListener('change', handleInputChange);
+            phoneNumberInput.addEventListener('input', handleInputChange);
+            messageTextarea.addEventListener('input', handleInputChange);
+            
+            copyButton.addEventListener('click', copyLinkToClipboard);
+            
+            sendButton.addEventListener('click', function() {
+                const linkData = generateWhatsAppLink(); 
+                if (linkData) {
+                    saveLinkToRecent(linkData);
+                }
+            });
+
+            clearHistoryButton.addEventListener('click', clearAllRecentLinks);
+
+            populateCountryCodes();
+            loadRecentLinks();
+            handleInputChange(); 
+        });
+    </script>
+</body>
+</html>
